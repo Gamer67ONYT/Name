@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA V Ultimate Quiz</title>
+    <title>GTA V Ultimate Trivia Database</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap');
 
+        /* Pure CSS Animated Los Santos Sunset Background - Never Breaks */
         body, html {
             margin: 0;
             padding: 0;
@@ -14,37 +15,34 @@
             font-family: 'Roboto', sans-serif;
             color: white;
             overflow: hidden;
-            background-color: #000;
+            background: linear-gradient(-45deg, #ff4e00, #ec9f05, #ff007b, #2b00ff, #000000);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
         }
 
-        /* Cinematic Moving Background (Never breaks) */
-        .bg-container {
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Scanline Overlay for retro vibe */
+        .scanlines {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .bg-image {
             width: 100%;
             height: 100%;
-            background-image: url('https://media.rockstargames.com/rockstargames/img/global/news/upload/actual_1364906194.jpg');
-            background-size: cover;
-            background-position: center;
-            animation: panZoom 20s infinite alternate ease-in-out;
-            filter: brightness(0.4); /* Darkens the background for text readability */
-        }
-
-        @keyframes panZoom {
-            0% { transform: scale(1.1) translate(0px, 0px); }
-            100% { transform: scale(1.3) translate(-20px, 15px); }
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
         /* UI Layout */
         .app-container {
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -60,39 +58,41 @@
 
         h1 {
             font-family: 'Bebas Neue', cursive;
-            font-size: 4rem;
-            color: #2ecc71; /* GTA Green */
-            letter-spacing: 3px;
+            font-size: 4.5rem;
+            color: white;
+            letter-spacing: 4px;
             margin: 0;
-            text-shadow: 4px 4px 0px #000;
+            text-shadow: 4px 4px 0px #000, 0 0 20px rgba(255, 255, 255, 0.3);
         }
 
         .progress-bar {
-            font-size: 1.2rem;
-            color: #f1c40f; /* GTA Gold */
+            font-size: 1.5rem;
+            color: #f1c40f;
             font-weight: bold;
             text-shadow: 2px 2px 4px #000;
             margin-bottom: 10px;
+            font-family: 'Bebas Neue', cursive;
+            letter-spacing: 2px;
         }
 
         /* Quiz Box */
         .quiz-card {
-            background: rgba(15, 15, 15, 0.85);
+            background: rgba(10, 10, 10, 0.9);
             border: 2px solid #333;
-            border-top: 5px solid #2ecc71;
+            border-top: 5px solid #ff007b;
             border-radius: 8px;
-            padding: 30px;
+            padding: 40px;
             width: 100%;
-            max-width: 600px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            max-width: 700px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.9);
             text-align: center;
-            backdrop-filter: blur(5px);
         }
 
         #question-text {
-            font-size: 1.5rem;
-            margin-bottom: 25px;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
             font-weight: 700;
+            line-height: 1.3;
         }
 
         /* Buttons */
@@ -103,21 +103,22 @@
         }
 
         .btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #555;
             color: white;
-            padding: 15px;
-            font-size: 1.2rem;
+            padding: 18px;
+            font-size: 1.3rem;
             font-family: 'Bebas Neue', cursive;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             cursor: pointer;
             transition: all 0.2s ease;
             border-radius: 4px;
+            text-transform: uppercase;
         }
 
         .btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: #2ecc71;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ff007b;
             transform: translateX(10px);
         }
 
@@ -125,6 +126,7 @@
             background: #2ecc71;
             color: black;
             border-color: #27ae60;
+            transform: scale(1.02);
         }
 
         .btn.wrong {
@@ -135,117 +137,144 @@
 
         /* Feedback and Next Button */
         #feedback {
-            margin-top: 20px;
+            margin-top: 25px;
             font-family: 'Bebas Neue', cursive;
-            font-size: 2.5rem;
-            letter-spacing: 2px;
+            font-size: 3rem;
+            letter-spacing: 3px;
             display: none;
+            text-shadow: 2px 2px 0px #000;
         }
 
-        #next-btn, #restart-btn {
-            margin-top: 20px;
-            background: #f39c12;
+        #next-btn, #restart-btn, #start-btn {
+            margin-top: 25px;
+            background: #f1c40f;
             color: black;
             border: none;
             padding: 15px 30px;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-family: 'Bebas Neue', cursive;
             cursor: pointer;
             border-radius: 4px;
-            display: none;
             width: 100%;
             transition: 0.2s;
+            text-transform: uppercase;
         }
 
-        #next-btn:hover, #restart-btn:hover {
-            background: #e67e22;
+        #next-btn:hover, #restart-btn:hover, #start-btn:hover {
+            background: #f39c12;
+            transform: translateY(-2px);
         }
 
-        /* End Screen */
-        #end-screen {
+        /* Screens */
+        #quiz-screen, #end-screen {
             display: none;
         }
 
         .final-score {
-            font-size: 3rem;
+            font-size: 4rem;
             color: white;
             margin-bottom: 10px;
+            font-family: 'Bebas Neue', cursive;
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-container">
-        <div class="bg-image"></div>
-    </div>
+    <div class="scanlines"></div>
 
     <div class="app-container">
         <div class="header">
             <h1>LOS SANTOS TRIVIA</h1>
-            <div class="progress-bar" id="progress">Question 1 of 5</div>
+            <div class="progress-bar" id="progress">Ready to drop in?</div>
         </div>
 
         <div class="quiz-card">
+            
+            <!-- Start Screen -->
+            <div id="start-screen">
+                <p style="font-size: 1.5rem; margin-bottom: 30px;">Welcome to the ultimate GTA V database. <br>10 random questions per run. Do you have what it takes?</p>
+                <button id="start-btn" onclick="startQuiz()">START HEIST</button>
+            </div>
+
             <!-- Quiz Screen -->
             <div id="quiz-screen">
                 <div id="question-text">Loading question...</div>
-                <div class="options-grid" id="options-container">
-                    <!-- Buttons injected by JS -->
-                </div>
+                <div class="options-grid" id="options-container"></div>
                 <div id="feedback"></div>
-                <button id="next-btn" onclick="nextQuestion()">NEXT QUESTION</button>
+                <button id="next-btn" onclick="nextQuestion()" style="display: none;">NEXT QUESTION</button>
             </div>
 
             <!-- End Screen -->
             <div id="end-screen">
-                <div id="end-title" style="font-family: 'Bebas Neue', cursive; font-size: 4rem;"></div>
+                <div id="end-title" style="font-family: 'Bebas Neue', cursive; font-size: 5rem;"></div>
                 <div class="final-score" id="final-score-text"></div>
-                <p id="end-message" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
-                <button id="restart-btn" style="display: block;" onclick="restartQuiz()">PLAY AGAIN</button>
+                <p id="end-message" style="font-size: 1.4rem; margin-bottom: 30px; line-height: 1.5;"></p>
+                <button id="restart-btn" onclick="startQuiz()">PLAY AGAIN</button>
             </div>
         </div>
     </div>
 
     <script>
-        const quizData = [
-            {
-                question: "What is the name of the fictional city in GTA V?",
-                options: ["Liberty City", "Vice City", "Los Santos", "San Fierro"],
-                answer: 2
-            },
-            {
-                question: "Which character is a retired, wealthy bank robber?",
-                options: ["Franklin Clinton", "Trevor Philips", "Michael De Santa", "Lamar Davis"],
-                answer: 2
-            },
-            {
-                question: "What is the name of Franklin's dog?",
-                options: ["Chop", "Buster", "Dawg", "Killer"],
-                answer: 0
-            },
-            {
-                question: "What company makes the 'iFruit' phone in the game?",
-                options: ["Fruit", "Badger", "Shark", "Lifeinvader"],
-                answer: 0
-            },
-            {
-                question: "Who runs Trevor Philips Enterprises?",
-                options: ["Ron Jakowski", "Wade Hebert", "Chef", "Trevor Philips"],
-                answer: 3
-            }
+        // Massive Question Database
+        const fullDatabase = [
+            { question: "What is the name of the fictional city in GTA V?", options: ["Liberty City", "Vice City", "Los Santos", "San Fierro"], answer: 2 },
+            { question: "Which character is a retired, wealthy bank robber?", options: ["Franklin Clinton", "Trevor Philips", "Michael De Santa", "Lamar Davis"], answer: 2 },
+            { question: "What is the name of Franklin's dog?", options: ["Chop", "Buster", "Dawg", "Killer"], answer: 0 },
+            { question: "What company makes the 'iFruit' phone?", options: ["Fruit", "Badger", "Shark", "Lifeinvader"], answer: 0 },
+            { question: "Who runs Trevor Philips Enterprises?", options: ["Ron Jakowski", "Wade Hebert", "Chef", "Trevor Philips"], answer: 3 },
+            { question: "What is the highest mountain in GTA V?", options: ["Mount Gordo", "Mount Josiah", "Mount Chiliad", "Mount Tataviam"], answer: 2 },
+            { question: "Which private military company serves as a major antagonist?", options: ["SecuroServ", "Merryweather Security", "Gruppe Sechs", "Ballas"], answer: 1 },
+            { question: "What is the name of the social media parody of Facebook?", options: ["Bleeter", "Lifeinvader", "Snapmatic", "Chirper"], answer: 1 },
+            { question: "Which protagonist lives in Sandy Shores?", options: ["Franklin", "Michael", "Lamar", "Trevor"], answer: 3 },
+            { question: "What is the name of Michael's wife?", options: ["Tracey", "Amanda", "Ursula", "Maude"], answer: 1 },
+            { question: "What color do the Ballas gang members wear?", options: ["Green", "Red", "Yellow", "Purple"], answer: 3 },
+            { question: "Which vehicle is heavily armored and resembles a tank?", options: ["Kuruma", "Insurgent", "Rhino", "Zentorno"], answer: 2 },
+            { question: "What is the name of the fictional stock market that responds to assassinations?", options: ["BAWSAQ", "LCN", "NASDAQ", "DOW"], answer: 0 },
+            { question: "Who gives Franklin assassination missions?", options: ["Simeon", "Lester", "Martin Madrazo", "Devin Weston"], answer: 1 },
+            { question: "What is the name of the military base in San Andreas?", options: ["Area 51", "Fort Zancudo", "Naval Station Los Santos", "Vespucci Base"], answer: 1 },
+            { question: "Which radio station plays rock music hosted by Kenny Loggins?", options: ["Non-Stop-Pop FM", "Radio Los Santos", "Los Santos Rock Radio", "Channel X"], answer: 2 },
+            { question: "What is the name of the cult located in the Chiliad Mountain State Wilderness?", options: ["The Epsilon Program", "Children of the Mountain", "Altruist Cult", "Kifflom"], answer: 2 },
+            { question: "Which character says 'Yee-yee ass haircut'?", options: ["Franklin", "Simeon", "Stretch", "Lamar"], answer: 3 },
+            { question: "What is the name of the strip club managed by Trevor?", options: ["Vanilla Unicorn", "The Hen House", "Bahama Mamas", "Tequil-la-la"], answer: 0 },
+            { question: "Who is the corrupt FIB agent that manipulates Michael?", options: ["Steve Haines", "Dave Norton", "Andreas Sanchez", "Karen Daniels"], answer: 0 },
+            { question: "What car dealership does Franklin initially work for?", options: ["Premium Deluxe Motorsport", "Sanders Motorcycles", "Legendary Motorsport", "Southern San Andreas Super Autos"], answer: 0 },
+            { question: "Which heist is the final mission of the game?", options: ["The Jewel Store Job", "The Paleto Score", "The Bureau Raid", "The Big Score"], answer: 3 },
+            { question: "What is the fictional equivalent of Hollywood in the game?", options: ["Rockford Hills", "Vinewood", "Vespucci Beach", "Richman"], answer: 1 },
+            { question: "Which alien-worshipping religion can Michael join?", options: ["The Epsilon Program", "Altruist Cult", "Children of the Mountain", "Scientology"], answer: 0 },
+            { question: "What is the name of Trevor's heavily modified truck?", options: ["The Liberator", "Bodhi", "Sandking", "Rebel"], answer: 1 },
+            { question: "Who is the billionaire investor that acts as a major antagonist?", options: ["Martin Madrazo", "Solomon Richards", "Devin Weston", "Wei Cheng"], answer: 2 }
         ];
 
+        let activeQuiz = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let acceptingAnswers = true;
+        const QUESTIONS_PER_RUN = 10;
 
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const endScreen = document.getElementById('end-screen');
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const progressText = document.getElementById('progress');
         const feedbackText = document.getElementById('feedback');
         const nextBtn = document.getElementById('next-btn');
-        const quizScreen = document.getElementById('quiz-screen');
-        const endScreen = document.getElementById('end-screen');
+
+        // Function to shuffle the database and pick 10 random questions
+        function startQuiz() {
+            // Shuffle array using Fisher-Yates algorithm
+            const shuffled = [...fullDatabase].sort(() => 0.5 - Math.random());
+            activeQuiz = shuffled.slice(0, QUESTIONS_PER_RUN);
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            startScreen.style.display = "none";
+            endScreen.style.display = "none";
+            quizScreen.style.display = "block";
+            
+            loadQuestion();
+        }
 
         function loadQuestion() {
             acceptingAnswers = true;
@@ -253,9 +282,9 @@
             nextBtn.style.display = "none";
             optionsContainer.innerHTML = "";
             
-            const currentQ = quizData[currentQuestionIndex];
+            const currentQ = activeQuiz[currentQuestionIndex];
             questionText.innerText = currentQ.question;
-            progressText.innerText = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            progressText.innerText = `Question ${currentQuestionIndex + 1} of ${QUESTIONS_PER_RUN}`;
 
             currentQ.options.forEach((option, index) => {
                 const button = document.createElement('button');
@@ -270,7 +299,7 @@
             if (!acceptingAnswers) return;
             acceptingAnswers = false;
 
-            const currentQ = quizData[currentQuestionIndex];
+            const currentQ = activeQuiz[currentQuestionIndex];
             const correctIndex = currentQ.answer;
             const allButtons = optionsContainer.children;
 
@@ -281,7 +310,7 @@
                 score++;
             } else {
                 buttonClicked.classList.add('wrong');
-                allButtons[correctIndex].classList.add('correct'); // Show correct answer
+                allButtons[correctIndex].classList.add('correct'); // Highlight correct answer
                 feedbackText.innerText = "WASTED";
                 feedbackText.style.color = "#e74c3c";
             }
@@ -292,7 +321,7 @@
 
         function nextQuestion() {
             currentQuestionIndex++;
-            if (currentQuestionIndex < quizData.length) {
+            if (currentQuestionIndex < activeQuiz.length) {
                 loadQuestion();
             } else {
                 showResults();
@@ -302,39 +331,28 @@
         function showResults() {
             quizScreen.style.display = "none";
             endScreen.style.display = "block";
-            progressText.innerText = "Mission Passed?";
+            progressText.innerText = "Heist Complete";
 
             const endTitle = document.getElementById('end-title');
             const finalScoreText = document.getElementById('final-score-text');
             const endMessage = document.getElementById('end-message');
 
-            finalScoreText.innerText = `Score: ${score} / ${quizData.length}`;
+            finalScoreText.innerText = `${score} / ${QUESTIONS_PER_RUN}`;
 
-            if (score === quizData.length) {
-                endTitle.innerText = "HEIST SUCCESSFUL!";
+            if (score === QUESTIONS_PER_RUN) {
+                endTitle.innerText = "PLATINUM MEDAL";
                 endTitle.style.color = "#f1c40f";
-                endMessage.innerText = "Flawless run. You know Los Santos better than Rockstar.";
-            } else if (score >= 3) {
+                endMessage.innerText = "Flawless execution. You know Los Santos better than Rockstar themselves. Ready for another run?";
+            } else if (score >= 7) {
                 endTitle.innerText = "MISSION PASSED";
                 endTitle.style.color = "#2ecc71";
-                endMessage.innerText = "Not bad, but Lester thinks you can do better.";
+                endMessage.innerText = "Good job, but Lester thinks you missed a few details. Run it back.";
             } else {
                 endTitle.innerText = "MISSION FAILED";
                 endTitle.style.color = "#e74c3c";
-                endMessage.innerText = "You'll be sleeping with the fishes. Try again.";
+                endMessage.innerText = "You'll be sleeping with the fishes. Time to hit the streets and learn the city.";
             }
         }
-
-        function restartQuiz() {
-            currentQuestionIndex = 0;
-            score = 0;
-            quizScreen.style.display = "block";
-            endScreen.style.display = "none";
-            loadQuestion();
-        }
-
-        // Start the quiz
-        loadQuestion();
     </script>
 </body>
 </html>
