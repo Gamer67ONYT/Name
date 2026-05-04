@@ -3,46 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA V Ultimate Trivia Database</title>
+    <title>GTA V Pro Trivia Database</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap');
 
-        /* Pure CSS Animated Los Santos Sunset Background - Never Breaks */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: 'Roboto', sans-serif;
-            color: white;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
             overflow: hidden;
-            background: linear-gradient(-45deg, #ff4e00, #ec9f05, #ff007b, #2b00ff, #000000);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-color: #000;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Scanline Overlay for retro vibe */
-        .scanlines {
+        /* Native HTML5 Video Background */
+        .video-container {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 3px 100%;
-            z-index: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        video {
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: brightness(0.35) contrast(1.2); /* Darkens and makes neon pop */
+        }
+
+        /* Dark Overlay for depth */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.8) 100%);
+            z-index: -1;
             pointer-events: none;
         }
 
-        /* UI Layout */
+        /* Pro UI Layout */
         .app-container {
-            position: relative;
-            z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -53,116 +65,128 @@
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease-out;
         }
 
         h1 {
             font-family: 'Bebas Neue', cursive;
-            font-size: 4.5rem;
-            color: white;
-            letter-spacing: 4px;
+            font-size: 5rem;
+            color: #fff;
+            letter-spacing: 6px;
             margin: 0;
-            text-shadow: 4px 4px 0px #000, 0 0 20px rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 20px rgba(46, 204, 113, 0.5), 0px 4px 0px rgba(0,0,0,1);
+        }
+
+        h1 span {
+            color: #2ecc71; /* Rockstar Green */
         }
 
         .progress-bar {
-            font-size: 1.5rem;
-            color: #f1c40f;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px #000;
-            margin-bottom: 10px;
-            font-family: 'Bebas Neue', cursive;
-            letter-spacing: 2px;
+            font-size: 1rem;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 5px;
         }
 
-        /* Quiz Box */
+        /* Glassmorphism Card */
         .quiz-card {
-            background: rgba(10, 10, 10, 0.9);
-            border: 2px solid #333;
-            border-top: 5px solid #ff007b;
-            border-radius: 8px;
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #2ecc71;
+            border-radius: 16px;
             padding: 40px;
             width: 100%;
-            max-width: 700px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.9);
+            max-width: 650px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         #question-text {
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            font-weight: 700;
-            line-height: 1.3;
+            font-size: 1.6rem;
+            margin-bottom: 35px;
+            font-weight: 600;
+            line-height: 1.4;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
         }
 
-        /* Buttons */
+        /* Modern Buttons */
         .options-grid {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid #555;
-            color: white;
-            padding: 18px;
-            font-size: 1.3rem;
-            font-family: 'Bebas Neue', cursive;
-            letter-spacing: 1.5px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 4px;
-            text-transform: uppercase;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #ff007b;
-            transform: translateX(10px);
+            background: rgba(46, 204, 113, 0.1);
+            border-color: #2ecc71;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
         .btn.correct {
             background: #2ecc71;
-            color: black;
-            border-color: #27ae60;
+            color: #000;
+            border-color: #2ecc71;
             transform: scale(1.02);
         }
 
         .btn.wrong {
             background: #e74c3c;
-            color: white;
-            border-color: #c0392b;
+            color: #fff;
+            border-color: #e74c3c;
         }
 
-        /* Feedback and Next Button */
+        /* Feedback Area */
         #feedback {
             margin-top: 25px;
             font-family: 'Bebas Neue', cursive;
-            font-size: 3rem;
-            letter-spacing: 3px;
+            font-size: 3.5rem;
+            letter-spacing: 4px;
             display: none;
-            text-shadow: 2px 2px 0px #000;
+            animation: zoomIn 0.3s ease-out forwards;
         }
 
-        #next-btn, #restart-btn, #start-btn {
+        .action-btn {
             margin-top: 25px;
-            background: #f1c40f;
-            color: black;
+            background: #fff;
+            color: #000;
             border: none;
-            padding: 15px 30px;
-            font-size: 1.8rem;
-            font-family: 'Bebas Neue', cursive;
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 8px;
             width: 100%;
             transition: 0.2s;
-            text-transform: uppercase;
+            display: none;
         }
 
-        #next-btn:hover, #restart-btn:hover, #start-btn:hover {
-            background: #f39c12;
-            transform: translateY(-2px);
+        .action-btn:hover {
+            background: #2ecc71;
+            color: #000;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
         }
 
         /* Screens */
@@ -172,50 +196,76 @@
 
         .final-score {
             font-size: 4rem;
-            color: white;
-            margin-bottom: 10px;
             font-family: 'Bebas Neue', cursive;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: zoomIn 0.4s ease-out forwards;
         }
     </style>
 </head>
 <body>
 
-    <div class="scanlines"></div>
+    <!-- Professional Native HTML5 Video Background -->
+    <div class="video-container">
+        <!-- Direct MP4 link to a cinematic night city flight (No YouTube branding, never breaks) -->
+        <video autoplay loop muted playsinline>
+            <source src="https://cdn.pixabay.com/video/2018/06/08/16668-273874404_large.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="overlay"></div>
 
     <div class="app-container">
         <div class="header">
-            <h1>LOS SANTOS TRIVIA</h1>
-            <div class="progress-bar" id="progress">Ready to drop in?</div>
+            <h1>LOS SANTOS <span>TRIVIA</span></h1>
+            <div class="progress-bar" id="progress">Awaiting Connection...</div>
         </div>
 
-        <div class="quiz-card">
+        <div class="quiz-card" id="card-container">
             
             <!-- Start Screen -->
-            <div id="start-screen">
-                <p style="font-size: 1.5rem; margin-bottom: 30px;">Welcome to the ultimate GTA V database. <br>10 random questions per run. Do you have what it takes?</p>
-                <button id="start-btn" onclick="startQuiz()">START HEIST</button>
+            <div id="start-screen" class="fade-in">
+                <p style="font-size: 1.1rem; color: #ccc; margin-bottom: 30px; line-height: 1.6;">
+                    Accessing Secure Database...<br>
+                    You will receive 10 randomized inquiries per session.<br>
+                    Precision is mandatory.
+                </p>
+                <button id="start-btn" class="action-btn" style="display: block;" onclick="startQuiz()">Initialize Heist</button>
             </div>
 
             <!-- Quiz Screen -->
             <div id="quiz-screen">
-                <div id="question-text">Loading question...</div>
+                <div id="question-text"></div>
                 <div class="options-grid" id="options-container"></div>
                 <div id="feedback"></div>
-                <button id="next-btn" onclick="nextQuestion()" style="display: none;">NEXT QUESTION</button>
+                <button id="next-btn" class="action-btn" onclick="nextQuestion()">Next Target</button>
             </div>
 
             <!-- End Screen -->
             <div id="end-screen">
-                <div id="end-title" style="font-family: 'Bebas Neue', cursive; font-size: 5rem;"></div>
+                <div id="end-title" style="font-family: 'Bebas Neue', cursive; font-size: 4.5rem; letter-spacing: 2px;"></div>
                 <div class="final-score" id="final-score-text"></div>
-                <p id="end-message" style="font-size: 1.4rem; margin-bottom: 30px; line-height: 1.5;"></p>
-                <button id="restart-btn" onclick="startQuiz()">PLAY AGAIN</button>
+                <p id="end-message" style="font-size: 1.1rem; color: #ccc; margin-bottom: 30px; line-height: 1.6;"></p>
+                <button id="restart-btn" class="action-btn" style="display: block;" onclick="startQuiz()">Run It Back</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Massive Question Database
+        // Professional Extended Database
         const fullDatabase = [
             { question: "What is the name of the fictional city in GTA V?", options: ["Liberty City", "Vice City", "Los Santos", "San Fierro"], answer: 2 },
             { question: "Which character is a retired, wealthy bank robber?", options: ["Franklin Clinton", "Trevor Philips", "Michael De Santa", "Lamar Davis"], answer: 2 },
@@ -251,47 +301,58 @@
         let acceptingAnswers = true;
         const QUESTIONS_PER_RUN = 10;
 
-        const startScreen = document.getElementById('start-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const endScreen = document.getElementById('end-screen');
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const progressText = document.getElementById('progress');
-        const feedbackText = document.getElementById('feedback');
-        const nextBtn = document.getElementById('next-btn');
+        const screens = {
+            start: document.getElementById('start-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            end: document.getElementById('end-screen')
+        };
+        
+        const ui = {
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            progressText: document.getElementById('progress'),
+            feedbackText: document.getElementById('feedback'),
+            nextBtn: document.getElementById('next-btn'),
+            card: document.getElementById('card-container')
+        };
 
-        // Function to shuffle the database and pick 10 random questions
+        function triggerAnimation() {
+            ui.card.classList.remove('fade-in');
+            void ui.card.offsetWidth; // Trigger reflow
+            ui.card.classList.add('fade-in');
+        }
+
         function startQuiz() {
-            // Shuffle array using Fisher-Yates algorithm
             const shuffled = [...fullDatabase].sort(() => 0.5 - Math.random());
             activeQuiz = shuffled.slice(0, QUESTIONS_PER_RUN);
             
             currentQuestionIndex = 0;
             score = 0;
             
-            startScreen.style.display = "none";
-            endScreen.style.display = "none";
-            quizScreen.style.display = "block";
+            screens.start.style.display = "none";
+            screens.end.style.display = "none";
+            screens.quiz.style.display = "block";
             
             loadQuestion();
         }
 
         function loadQuestion() {
+            triggerAnimation();
             acceptingAnswers = true;
-            feedbackText.style.display = "none";
-            nextBtn.style.display = "none";
-            optionsContainer.innerHTML = "";
+            ui.feedbackText.style.display = "none";
+            ui.nextBtn.style.display = "none";
+            ui.optionsContainer.innerHTML = "";
             
             const currentQ = activeQuiz[currentQuestionIndex];
-            questionText.innerText = currentQ.question;
-            progressText.innerText = `Question ${currentQuestionIndex + 1} of ${QUESTIONS_PER_RUN}`;
+            ui.questionText.innerText = currentQ.question;
+            ui.progressText.innerText = `Data Node ${currentQuestionIndex + 1} // ${QUESTIONS_PER_RUN}`;
 
             currentQ.options.forEach((option, index) => {
                 const button = document.createElement('button');
                 button.innerText = option;
                 button.classList.add('btn');
                 button.onclick = () => checkAnswer(index, button);
-                optionsContainer.appendChild(button);
+                ui.optionsContainer.appendChild(button);
             });
         }
 
@@ -301,22 +362,22 @@
 
             const currentQ = activeQuiz[currentQuestionIndex];
             const correctIndex = currentQ.answer;
-            const allButtons = optionsContainer.children;
+            const allButtons = ui.optionsContainer.children;
 
             if (selectedIndex === correctIndex) {
                 buttonClicked.classList.add('correct');
-                feedbackText.innerText = "RESPECT +";
-                feedbackText.style.color = "#2ecc71";
+                ui.feedbackText.innerText = "RESPECT +";
+                ui.feedbackText.style.color = "#2ecc71";
                 score++;
             } else {
                 buttonClicked.classList.add('wrong');
-                allButtons[correctIndex].classList.add('correct'); // Highlight correct answer
-                feedbackText.innerText = "WASTED";
-                feedbackText.style.color = "#e74c3c";
+                allButtons[correctIndex].classList.add('correct'); 
+                ui.feedbackText.innerText = "WASTED";
+                ui.feedbackText.style.color = "#e74c3c";
             }
 
-            feedbackText.style.display = "block";
-            nextBtn.style.display = "block";
+            ui.feedbackText.style.display = "block";
+            ui.nextBtn.style.display = "block";
         }
 
         function nextQuestion() {
@@ -329,28 +390,29 @@
         }
 
         function showResults() {
-            quizScreen.style.display = "none";
-            endScreen.style.display = "block";
-            progressText.innerText = "Heist Complete";
+            triggerAnimation();
+            screens.quiz.style.display = "none";
+            screens.end.style.display = "block";
+            ui.progressText.innerText = "Session Terminated";
 
             const endTitle = document.getElementById('end-title');
             const finalScoreText = document.getElementById('final-score-text');
             const endMessage = document.getElementById('end-message');
 
-            finalScoreText.innerText = `${score} / ${QUESTIONS_PER_RUN}`;
+            finalScoreText.innerText = `${score} // ${QUESTIONS_PER_RUN}`;
 
             if (score === QUESTIONS_PER_RUN) {
-                endTitle.innerText = "PLATINUM MEDAL";
-                endTitle.style.color = "#f1c40f";
-                endMessage.innerText = "Flawless execution. You know Los Santos better than Rockstar themselves. Ready for another run?";
-            } else if (score >= 7) {
-                endTitle.innerText = "MISSION PASSED";
+                endTitle.innerText = "CRIMINAL MASTERMIND";
                 endTitle.style.color = "#2ecc71";
-                endMessage.innerText = "Good job, but Lester thinks you missed a few details. Run it back.";
+                endMessage.innerText = "Elite status confirmed. Your knowledge of Los Santos is unmatched.";
+            } else if (score >= 7) {
+                endTitle.innerText = "HEIST SUCCESSFUL";
+                endTitle.style.color = "#f1c40f";
+                endMessage.innerText = "Solid operation, but there is still room for improvement.";
             } else {
                 endTitle.innerText = "MISSION FAILED";
                 endTitle.style.color = "#e74c3c";
-                endMessage.innerText = "You'll be sleeping with the fishes. Time to hit the streets and learn the city.";
+                endMessage.innerText = "Critical failure. You need to spend more time in the city.";
             }
         }
     </script>
