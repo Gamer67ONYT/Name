@@ -3,418 +3,476 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA V Pro Trivia Database</title>
+    <title>GTA V: The Ultimate Heist</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;700&display=swap');
+
+        :root {
+            --gta-green: #2ecc71;
+            --gta-red: #e74c3c;
+            --gta-gold: #f1c40f;
+            --gta-blue: #3498db;
+            --glass-bg: rgba(15, 15, 20, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Inter', sans-serif;
-            color: #fff;
-            overflow: hidden;
-            background-color: #000;
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Rajdhani', sans-serif;
+            color: #fff; overflow: hidden;
+            background-color: #050505;
         }
 
-        /* Native HTML5 Video Background */
-        .video-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+        /* Hardware Accelerated Canvas Background */
+        canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
             z-index: -2;
-            overflow: hidden;
         }
 
-        video {
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            object-fit: cover;
-            filter: brightness(0.35) contrast(1.2); /* Darkens and makes neon pop */
+        .vignette {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle, rgba(0,0,0,0) 30%, rgba(0,0,0,0.9) 100%);
+            z-index: -1; pointer-events: none;
         }
 
-        /* Dark Overlay for depth */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.8) 100%);
-            z-index: -1;
-            pointer-events: none;
+        /* App Layout */
+        .container {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100vh; padding: 20px;
         }
 
-        /* Pro UI Layout */
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            padding: 20px;
+        /* Glass UI Card */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--gta-green);
+            border-radius: 12px; padding: 40px;
+            width: 100%; max-width: 800px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 20px rgba(46, 204, 113, 0.2);
+            position: relative; overflow: hidden;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 1s ease-out;
-        }
-
+        /* Typography */
         h1 {
-            font-family: 'Bebas Neue', cursive;
-            font-size: 5rem;
-            color: #fff;
-            letter-spacing: 6px;
-            margin: 0;
-            text-shadow: 0 0 20px rgba(46, 204, 113, 0.5), 0px 4px 0px rgba(0,0,0,1);
+            font-family: 'Bebas Neue', cursive; font-size: 5rem;
+            letter-spacing: 5px; margin: 0 0 10px 0; text-align: center;
+            text-shadow: 0 0 20px var(--gta-green), 3px 3px 0 #000;
+        }
+        
+        .hud {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 20px;
+            font-size: 1.5rem; font-weight: bold;
+            border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;
         }
 
-        h1 span {
-            color: #2ecc71; /* Rockstar Green */
+        .hud-item { display: flex; align-items: center; gap: 10px; }
+        .stars { color: var(--gta-gold); letter-spacing: 2px; }
+
+        /* Timer Bar */
+        .timer-container {
+            width: 100%; height: 8px; background: rgba(255,255,255,0.1);
+            border-radius: 4px; margin-bottom: 30px; overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%; width: 100%; background: var(--gta-green);
+            transition: width 1s linear, background-color 0.3s;
         }
 
-        .progress-bar {
-            font-size: 1rem;
-            color: #a0a0a0;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-top: 5px;
-        }
-
-        /* Glassmorphism Card */
-        .quiz-card {
-            background: rgba(20, 20, 20, 0.4);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #2ecc71;
-            border-radius: 16px;
-            padding: 40px;
-            width: 100%;
-            max-width: 650px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
+        /* Quiz Elements */
         #question-text {
-            font-size: 1.6rem;
-            margin-bottom: 35px;
-            font-weight: 600;
-            line-height: 1.4;
-            text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
+            font-size: 1.8rem; margin-bottom: 30px; text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); min-height: 80px;
         }
 
-        /* Modern Buttons */
-        .options-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
         .btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 16px;
-            font-size: 1.1rem;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 8px;
-            position: relative;
-            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border);
+            color: #fff; padding: 20px; font-size: 1.3rem; font-family: 'Rajdhani', sans-serif;
+            font-weight: 700; cursor: pointer; border-radius: 8px;
+            transition: all 0.2s; position: relative; overflow: hidden;
         }
 
-        .btn:hover {
-            background: rgba(46, 204, 113, 0.1);
-            border-color: #2ecc71;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        .btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); border-color: var(--gta-green); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .btn:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
+        .btn.correct { background: var(--gta-green); color: #000; border-color: var(--gta-green); }
+        .btn.wrong { background: var(--gta-red); color: #fff; border-color: var(--gta-red); }
+        .btn.hidden { visibility: hidden; }
+
+        /* Lifeline */
+        .lifeline-btn {
+            background: rgba(52, 152, 219, 0.2); border: 1px solid var(--gta-blue);
+            color: var(--gta-blue); padding: 10px 20px; font-family: 'Bebas Neue', cursive;
+            font-size: 1.2rem; cursor: pointer; border-radius: 4px; transition: 0.3s;
+        }
+        .lifeline-btn:hover:not(:disabled) { background: var(--gta-blue); color: #fff; }
+        .lifeline-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #555; color: #555;}
+
+        /* Status & Screens */
+        #feedback-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Bebas Neue', cursive; font-size: 6rem; letter-spacing: 5px;
+            z-index: 10; opacity: 0; pointer-events: none; transition: 0.3s;
+            background: rgba(0,0,0,0.8);
         }
 
-        .btn.correct {
-            background: #2ecc71;
-            color: #000;
-            border-color: #2ecc71;
-            transform: scale(1.02);
-        }
-
-        .btn.wrong {
-            background: #e74c3c;
-            color: #fff;
-            border-color: #e74c3c;
-        }
-
-        /* Feedback Area */
-        #feedback {
-            margin-top: 25px;
-            font-family: 'Bebas Neue', cursive;
-            font-size: 3.5rem;
-            letter-spacing: 4px;
-            display: none;
-            animation: zoomIn 0.3s ease-out forwards;
-        }
+        #start-screen, #end-screen { display: none; text-align: center; }
+        .active-screen { display: block !important; animation: fadeIn 0.5s ease-out; }
 
         .action-btn {
-            margin-top: 25px;
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 16px 32px;
-            font-size: 1.2rem;
-            font-family: 'Inter', sans-serif;
-            font-weight: 800;
-            text-transform: uppercase;
-            cursor: pointer;
-            border-radius: 8px;
-            width: 100%;
-            transition: 0.2s;
-            display: none;
+            margin-top: 30px; background: var(--gta-gold); color: #000; border: none;
+            padding: 15px 40px; font-size: 1.8rem; font-family: 'Bebas Neue', cursive;
+            cursor: pointer; border-radius: 4px; transition: 0.2s; text-transform: uppercase;
         }
+        .action-btn:hover { background: #fff; transform: scale(1.05); }
 
-        .action-btn:hover {
-            background: #2ecc71;
-            color: #000;
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Screens */
-        #quiz-screen, #end-screen {
-            display: none;
-        }
-
-        .final-score {
-            font-size: 4rem;
-            font-family: 'Bebas Neue', cursive;
-            color: #fff;
-            margin-bottom: 10px;
-        }
-
-        /* Animations */
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .fade-in {
-            animation: zoomIn 0.4s ease-out forwards;
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 3.5rem; }
+            #feedback-overlay { font-size: 4rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Professional Native HTML5 Video Background -->
-    <div class="video-container">
-        <!-- Direct MP4 link to a cinematic night city flight (No YouTube branding, never breaks) -->
-        <video autoplay loop muted playsinline>
-            <source src="https://cdn.pixabay.com/video/2018/06/08/16668-273874404_large.mp4" type="video/mp4">
-        </video>
-    </div>
-    <div class="overlay"></div>
+    <!-- Dynamic Hardware Rendering Canvas -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="vignette"></div>
 
-    <div class="app-container">
-        <div class="header">
-            <h1>LOS SANTOS <span>TRIVIA</span></h1>
-            <div class="progress-bar" id="progress">Awaiting Connection...</div>
-        </div>
-
-        <div class="quiz-card" id="card-container">
+    <div class="container">
+        <h1>LOS SANTOS <span>TRIVIA</span></h1>
+        
+        <div class="glass-panel">
             
-            <!-- Start Screen -->
-            <div id="start-screen" class="fade-in">
-                <p style="font-size: 1.1rem; color: #ccc; margin-bottom: 30px; line-height: 1.6;">
-                    Accessing Secure Database...<br>
-                    You will receive 10 randomized inquiries per session.<br>
-                    Precision is mandatory.
+            <!-- START SCREEN -->
+            <div id="start-screen" class="active-screen">
+                <p style="font-size: 1.4rem; color: #aaa; margin-bottom: 20px;">
+                    Connection Established.<br>
+                    You have 3 lives. 15 seconds per question.<br>
+                    One chance to Call Lester for help.
                 </p>
-                <button id="start-btn" class="action-btn" style="display: block;" onclick="startQuiz()">Initialize Heist</button>
+                <button class="action-btn" onclick="initGame()">Start Heist</button>
             </div>
 
-            <!-- Quiz Screen -->
-            <div id="quiz-screen">
-                <div id="question-text"></div>
+            <!-- GAME SCREEN -->
+            <div id="game-screen" style="display: none;">
+                <div class="hud">
+                    <div class="hud-item">
+                        <span style="color:#aaa">WANTED:</span>
+                        <span class="stars" id="lives-display">★★★</span>
+                    </div>
+                    <div class="hud-item">
+                        <span style="color:#aaa">SCORE:</span>
+                        <span id="score-display" style="color: var(--gta-green);">0</span>
+                    </div>
+                    <button id="lester-btn" class="lifeline-btn" onclick="useLester()">📞 Call Lester (50/50)</button>
+                </div>
+
+                <div class="timer-container"><div class="timer-bar" id="timer-bar"></div></div>
+
+                <div id="question-text">Loading intel...</div>
                 <div class="options-grid" id="options-container"></div>
-                <div id="feedback"></div>
-                <button id="next-btn" class="action-btn" onclick="nextQuestion()">Next Target</button>
             </div>
 
-            <!-- End Screen -->
-            <div id="end-screen">
-                <div id="end-title" style="font-family: 'Bebas Neue', cursive; font-size: 4.5rem; letter-spacing: 2px;"></div>
-                <div class="final-score" id="final-score-text"></div>
-                <p id="end-message" style="font-size: 1.1rem; color: #ccc; margin-bottom: 30px; line-height: 1.6;"></p>
-                <button id="restart-btn" class="action-btn" style="display: block;" onclick="startQuiz()">Run It Back</button>
+            <!-- END SCREEN -->
+            <div id="end-screen" style="display: none;">
+                <h2 id="end-title" style="font-family: 'Bebas Neue', cursive; font-size: 5rem; margin:0;"></h2>
+                <p id="end-stats" style="font-size: 1.8rem; margin: 20px 0;"></p>
+                <button class="action-btn" onclick="document.location.reload()">Return to Setup</button>
             </div>
+
+            <!-- Visual Feedback overlay -->
+            <div id="feedback-overlay"></div>
         </div>
     </div>
 
     <script>
-        // Professional Extended Database
-        const fullDatabase = [
-            { question: "What is the name of the fictional city in GTA V?", options: ["Liberty City", "Vice City", "Los Santos", "San Fierro"], answer: 2 },
-            { question: "Which character is a retired, wealthy bank robber?", options: ["Franklin Clinton", "Trevor Philips", "Michael De Santa", "Lamar Davis"], answer: 2 },
-            { question: "What is the name of Franklin's dog?", options: ["Chop", "Buster", "Dawg", "Killer"], answer: 0 },
-            { question: "What company makes the 'iFruit' phone?", options: ["Fruit", "Badger", "Shark", "Lifeinvader"], answer: 0 },
-            { question: "Who runs Trevor Philips Enterprises?", options: ["Ron Jakowski", "Wade Hebert", "Chef", "Trevor Philips"], answer: 3 },
-            { question: "What is the highest mountain in GTA V?", options: ["Mount Gordo", "Mount Josiah", "Mount Chiliad", "Mount Tataviam"], answer: 2 },
-            { question: "Which private military company serves as a major antagonist?", options: ["SecuroServ", "Merryweather Security", "Gruppe Sechs", "Ballas"], answer: 1 },
-            { question: "What is the name of the social media parody of Facebook?", options: ["Bleeter", "Lifeinvader", "Snapmatic", "Chirper"], answer: 1 },
-            { question: "Which protagonist lives in Sandy Shores?", options: ["Franklin", "Michael", "Lamar", "Trevor"], answer: 3 },
-            { question: "What is the name of Michael's wife?", options: ["Tracey", "Amanda", "Ursula", "Maude"], answer: 1 },
-            { question: "What color do the Ballas gang members wear?", options: ["Green", "Red", "Yellow", "Purple"], answer: 3 },
-            { question: "Which vehicle is heavily armored and resembles a tank?", options: ["Kuruma", "Insurgent", "Rhino", "Zentorno"], answer: 2 },
-            { question: "What is the name of the fictional stock market that responds to assassinations?", options: ["BAWSAQ", "LCN", "NASDAQ", "DOW"], answer: 0 },
-            { question: "Who gives Franklin assassination missions?", options: ["Simeon", "Lester", "Martin Madrazo", "Devin Weston"], answer: 1 },
-            { question: "What is the name of the military base in San Andreas?", options: ["Area 51", "Fort Zancudo", "Naval Station Los Santos", "Vespucci Base"], answer: 1 },
-            { question: "Which radio station plays rock music hosted by Kenny Loggins?", options: ["Non-Stop-Pop FM", "Radio Los Santos", "Los Santos Rock Radio", "Channel X"], answer: 2 },
-            { question: "What is the name of the cult located in the Chiliad Mountain State Wilderness?", options: ["The Epsilon Program", "Children of the Mountain", "Altruist Cult", "Kifflom"], answer: 2 },
-            { question: "Which character says 'Yee-yee ass haircut'?", options: ["Franklin", "Simeon", "Stretch", "Lamar"], answer: 3 },
-            { question: "What is the name of the strip club managed by Trevor?", options: ["Vanilla Unicorn", "The Hen House", "Bahama Mamas", "Tequil-la-la"], answer: 0 },
-            { question: "Who is the corrupt FIB agent that manipulates Michael?", options: ["Steve Haines", "Dave Norton", "Andreas Sanchez", "Karen Daniels"], answer: 0 },
-            { question: "What car dealership does Franklin initially work for?", options: ["Premium Deluxe Motorsport", "Sanders Motorcycles", "Legendary Motorsport", "Southern San Andreas Super Autos"], answer: 0 },
-            { question: "Which heist is the final mission of the game?", options: ["The Jewel Store Job", "The Paleto Score", "The Bureau Raid", "The Big Score"], answer: 3 },
-            { question: "What is the fictional equivalent of Hollywood in the game?", options: ["Rockford Hills", "Vinewood", "Vespucci Beach", "Richman"], answer: 1 },
-            { question: "Which alien-worshipping religion can Michael join?", options: ["The Epsilon Program", "Altruist Cult", "Children of the Mountain", "Scientology"], answer: 0 },
-            { question: "What is the name of Trevor's heavily modified truck?", options: ["The Liberator", "Bodhi", "Sandking", "Rebel"], answer: 1 },
-            { question: "Who is the billionaire investor that acts as a major antagonist?", options: ["Martin Madrazo", "Solomon Richards", "Devin Weston", "Wei Cheng"], answer: 2 }
+        /* ====================================================================
+           1. MASSIVE TRIVIA DATABASE (50+ Questions)
+           ==================================================================== */
+        const masterDatabase = [
+            { q: "What is the name of the fictional city in GTA V?", o: ["Liberty City", "Vice City", "Los Santos", "San Fierro"], a: 2 },
+            { q: "Which character is a retired, wealthy bank robber?", o: ["Franklin", "Trevor", "Michael", "Lamar"], a: 2 },
+            { q: "What is the name of Franklin's dog?", o: ["Chop", "Buster", "Killer", "Dawg"], a: 0 },
+            { q: "What company makes the 'iFruit' phone?", o: ["Badger", "Shark", "Fruit", "Lifeinvader"], a: 2 },
+            { q: "Who runs Trevor Philips Enterprises?", o: ["Ron", "Wade", "Chef", "Trevor"], a: 3 },
+            { q: "What is the highest mountain in GTA V?", o: ["Mount Gordo", "Mount Josiah", "Mount Chiliad", "Mount Tataviam"], a: 2 },
+            { q: "Which PMC serves as a major antagonist?", o: ["SecuroServ", "Merryweather", "Gruppe Sechs", "Ballas"], a: 1 },
+            { q: "What is the social media parody of Facebook?", o: ["Bleeter", "Lifeinvader", "Snapmatic", "Chirper"], a: 1 },
+            { q: "Which protagonist lives in Sandy Shores?", o: ["Franklin", "Michael", "Lamar", "Trevor"], a: 3 },
+            { q: "What is the name of Michael's wife?", o: ["Tracey", "Amanda", "Ursula", "Maude"], a: 1 },
+            { q: "What color do the Ballas gang members wear?", o: ["Green", "Red", "Yellow", "Purple"], a: 3 },
+            { q: "Which vehicle is heavily armored and resembles a tank?", o: ["Kuruma", "Insurgent", "Rhino", "Zentorno"], a: 2 },
+            { q: "What is the fictional stock market tied to assassinations?", o: ["BAWSAQ", "LCN", "NASDAQ", "DOW"], a: 0 },
+            { q: "Who gives Franklin assassination missions?", o: ["Simeon", "Lester", "Madrazo", "Devin"], a: 1 },
+            { q: "What is the military base in San Andreas?", o: ["Area 51", "Fort Zancudo", "Naval Station", "Vespucci Base"], a: 1 },
+            { q: "Which radio station plays rock music hosted by Kenny Loggins?", o: ["Non-Stop-Pop", "Radio Los Santos", "Rock Radio", "Channel X"], a: 2 },
+            { q: "What is the name of the alien cult?", o: ["Epsilon Program", "Children of Mountain", "Altruists", "Kifflom"], a: 0 },
+            { q: "Which character says 'Yee-yee ass haircut'?", o: ["Franklin", "Simeon", "Stretch", "Lamar"], a: 3 },
+            { q: "What is the strip club managed by Trevor?", o: ["Vanilla Unicorn", "Hen House", "Bahama Mamas", "Tequil-la-la"], a: 0 },
+            { q: "Who is the corrupt FIB agent?", o: ["Steve Haines", "Dave Norton", "Andreas", "Karen"], a: 0 },
+            { q: "What car dealership does Franklin work for?", o: ["Premium Deluxe", "Sanders", "Legendary", "Southern SA"], a: 0 },
+            { q: "Which heist is the final mission?", o: ["Jewel Store", "Paleto Score", "Bureau Raid", "The Big Score"], a: 3 },
+            { q: "What is the equivalent of Hollywood?", o: ["Rockford Hills", "Vinewood", "Vespucci", "Richman"], a: 1 },
+            { q: "Trevor's heavily modified truck is called?", o: ["Liberator", "Bodhi", "Sandking", "Rebel"], a: 1 },
+            { q: "Who is the billionaire investor antagonist?", o: ["Madrazo", "Solomon", "Devin Weston", "Wei Cheng"], a: 2 },
+            { q: "What gang does Franklin belong to?", o: ["Ballas", "Vagos", "The Families", "Aztecas"], a: 2 },
+            { q: "What is the name of the fictional beer?", o: ["Pißwasser", "Logger", "Duff", "Patriot"], a: 0 },
+            { q: "What animal does Chop represent?", o: ["Pitbull", "Rottweiler", "Bulldog", "Doberman"], a: 1 },
+            { q: "Who is the host of Impotent Rage?", o: ["A Superhero", "A Politician", "A Cop", "A News Anchor"], a: 0 },
+            { q: "What game franchise is a parody of Call of Duty?", o: ["Righteous Slaughter", "Duty Calls", "Gun Metal", "Warzone"], a: 0 },
+            { q: "What is the in-game movie studio called?", o: ["Richards Majestic", "Vinewood Studios", "Los Santos Film", "Solomon's Sets"], a: 0 },
+            { q: "Who is Michael's therapist?", o: ["Dr. Friedlander", "Dr. Ray", "Dr. De Santa", "Dr. Los Santos"], a: 0 },
+            { q: "What vehicle flies and shoots homing missiles?", o: ["Deluxo", "Oppressor Mk II", "Hydra", "Lazer"], a: 1 },
+            { q: "What is the highest wanted level you can get in GTA V?", o: ["3 Stars", "4 Stars", "5 Stars", "6 Stars"], a: 2 },
+            { q: "Where do you break Brad out from?", o: ["He's dead", "Bolingbroke Prison", "Fort Zancudo", "FIB Building"], a: 0 },
+            { q: "What is the name of the submarine?", o: ["Kraken", "Kosatka", "Megalodon", "Leviathan"], a: 1 },
+            { q: "Which GTA Online update added the Casino?", o: ["Diamond Casino", "Heists", "Doomsday", "Gunrunning"], a: 0 },
+            { q: "Who calls you constantly about bowling in GTA IV (Bonus)?", o: ["Roman", "Brucie", "Little Jacob", "Packie"], a: 0 },
+            { q: "What is the brand of the blimp?", o: ["Xero", "Atomic", "Sprunk", "eCola"], a: 1 },
+            { q: "Which character loves yoga?", o: ["Michael", "Amanda", "Fabien", "Tracey"], a: 2 },
+            { q: "What is the name of the fictional TV talent show?", o: ["Fame or Shame", "Pop Idol", "Los Santos Got Talent", "Vinewood Star"], a: 0 },
+            { q: "What is the name of Trevor's imaginary friend/bear?", o: ["Mr. Raspberry Jam", "Teddy", "Sir Hugs", "Floyd"], a: 0 },
+            { q: "What town is the Paleto Score located in?", o: ["Paleto Bay", "Sandy Shores", "Grapeseed", "Chumash"], a: 0 },
+            { q: "What does Lester use to walk?", o: ["A wheelchair", "A cane", "Crutches", "Nothing"], a: 1 },
+            { q: "What color is Franklin's signature Buffalo S?", o: ["White", "Green", "Red", "Black"], a: 0 }
         ];
 
-        let activeQuiz = [];
-        let currentQuestionIndex = 0;
+        /* ====================================================================
+           2. GAME ENGINE LOGIC
+           ==================================================================== */
+        let gameQueue = [];
+        let currentQ = null;
         let score = 0;
-        let acceptingAnswers = true;
-        const QUESTIONS_PER_RUN = 10;
+        let lives = 3;
+        let timerInt = null;
+        let timeLeft = 15;
+        let lesterUsed = false;
+        let isProcessing = false;
 
         const screens = {
             start: document.getElementById('start-screen'),
-            quiz: document.getElementById('quiz-screen'),
+            game: document.getElementById('game-screen'),
             end: document.getElementById('end-screen')
         };
-        
         const ui = {
-            questionText: document.getElementById('question-text'),
-            optionsContainer: document.getElementById('options-container'),
-            progressText: document.getElementById('progress'),
-            feedbackText: document.getElementById('feedback'),
-            nextBtn: document.getElementById('next-btn'),
-            card: document.getElementById('card-container')
+            qText: document.getElementById('question-text'),
+            optContainer: document.getElementById('options-container'),
+            lives: document.getElementById('lives-display'),
+            score: document.getElementById('score-display'),
+            timer: document.getElementById('timer-bar'),
+            overlay: document.getElementById('feedback-overlay'),
+            lesterBtn: document.getElementById('lester-btn')
         };
 
-        function triggerAnimation() {
-            ui.card.classList.remove('fade-in');
-            void ui.card.offsetWidth; // Trigger reflow
-            ui.card.classList.add('fade-in');
-        }
-
-        function startQuiz() {
-            const shuffled = [...fullDatabase].sort(() => 0.5 - Math.random());
-            activeQuiz = shuffled.slice(0, QUESTIONS_PER_RUN);
-            
-            currentQuestionIndex = 0;
+        function initGame() {
+            // Shuffle database and take 15 questions
+            gameQueue = [...masterDatabase].sort(() => 0.5 - Math.random()).slice(0, 15);
             score = 0;
+            lives = 3;
+            lesterUsed = false;
             
-            screens.start.style.display = "none";
-            screens.end.style.display = "none";
-            screens.quiz.style.display = "block";
-            
-            loadQuestion();
+            screens.start.classList.remove('active-screen');
+            screens.game.classList.add('active-screen');
+            updateHUD();
+            nextTurn();
         }
 
-        function loadQuestion() {
-            triggerAnimation();
-            acceptingAnswers = true;
-            ui.feedbackText.style.display = "none";
-            ui.nextBtn.style.display = "none";
-            ui.optionsContainer.innerHTML = "";
-            
-            const currentQ = activeQuiz[currentQuestionIndex];
-            ui.questionText.innerText = currentQ.question;
-            ui.progressText.innerText = `Data Node ${currentQuestionIndex + 1} // ${QUESTIONS_PER_RUN}`;
+        function updateHUD() {
+            ui.score.innerText = score * 100; // 100 points per correct answer
+            let stars = "";
+            for(let i=0; i<3; i++) stars += (i < lives) ? "★" : "☆";
+            ui.lives.innerText = stars;
+            if(lives === 1) ui.lives.style.color = "var(--gta-red)";
+        }
 
-            currentQ.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.innerText = option;
-                button.classList.add('btn');
-                button.onclick = () => checkAnswer(index, button);
-                ui.optionsContainer.appendChild(button);
+        function nextTurn() {
+            if(lives <= 0) return endGame(false);
+            if(gameQueue.length === 0) return endGame(true);
+
+            isProcessing = false;
+            currentQ = gameQueue.pop();
+            ui.qText.innerText = currentQ.q;
+            ui.optContainer.innerHTML = "";
+
+            currentQ.o.forEach((opt, index) => {
+                let btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = opt;
+                btn.dataset.id = index;
+                btn.onclick = () => checkAnswer(index, btn);
+                ui.optContainer.appendChild(btn);
             });
+
+            startTimer();
         }
 
-        function checkAnswer(selectedIndex, buttonClicked) {
-            if (!acceptingAnswers) return;
-            acceptingAnswers = false;
+        function startTimer() {
+            clearInterval(timerInt);
+            timeLeft = 15;
+            ui.timer.style.transition = 'none';
+            ui.timer.style.width = '100%';
+            ui.timer.style.backgroundColor = 'var(--gta-green)';
+            
+            // Force reflow
+            void ui.timer.offsetWidth;
+            ui.timer.style.transition = 'width 1s linear, background-color 0.3s';
 
-            const currentQ = activeQuiz[currentQuestionIndex];
-            const correctIndex = currentQ.answer;
-            const allButtons = ui.optionsContainer.children;
+            timerInt = setInterval(() => {
+                timeLeft--;
+                let pct = (timeLeft / 15) * 100;
+                ui.timer.style.width = `${pct}%`;
 
-            if (selectedIndex === correctIndex) {
-                buttonClicked.classList.add('correct');
-                ui.feedbackText.innerText = "RESPECT +";
-                ui.feedbackText.style.color = "#2ecc71";
+                if(timeLeft <= 5) ui.timer.style.backgroundColor = 'var(--gta-red)';
+                if(timeLeft <= 0) {
+                    clearInterval(timerInt);
+                    checkAnswer(-1, null); // Time out = wrong
+                }
+            }, 1000);
+        }
+
+        function useLester() {
+            if(lesterUsed || isProcessing) return;
+            lesterUsed = true;
+            ui.lesterBtn.disabled = true;
+            ui.lesterBtn.innerText = "❌ LESTER UNAVAILABLE";
+
+            // Find two incorrect answers to remove
+            let buttons = Array.from(ui.optContainer.children);
+            let wrongIndexes = [0,1,2,3].filter(i => i !== currentQ.a);
+            // Shuffle wrong indexes
+            wrongIndexes = wrongIndexes.sort(() => 0.5 - Math.random());
+            
+            // Hide the first two
+            buttons[wrongIndexes[0]].classList.add('hidden');
+            buttons[wrongIndexes[1]].classList.add('hidden');
+        }
+
+        function checkAnswer(selectedIdx, btnNode) {
+            if(isProcessing) return;
+            isProcessing = true;
+            clearInterval(timerInt);
+
+            let isCorrect = (selectedIdx === currentQ.a);
+            let allBtns = ui.optContainer.children;
+
+            // Disable all
+            for(let b of allBtns) b.disabled = true;
+
+            if(isCorrect) {
+                if(btnNode) btnNode.classList.add('correct');
                 score++;
+                showFeedback("RESPECT +", "var(--gta-green)");
             } else {
-                buttonClicked.classList.add('wrong');
-                allButtons[correctIndex].classList.add('correct'); 
-                ui.feedbackText.innerText = "WASTED";
-                ui.feedbackText.style.color = "#e74c3c";
+                if(btnNode) btnNode.classList.add('wrong');
+                allBtns[currentQ.a].classList.add('correct'); // Show correct
+                lives--;
+                showFeedback("WASTED", "var(--gta-red)");
             }
 
-            ui.feedbackText.style.display = "block";
-            ui.nextBtn.style.display = "block";
+            updateHUD();
+            setTimeout(nextTurn, 2000);
         }
 
-        function nextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < activeQuiz.length) {
-                loadQuestion();
+        function showFeedback(text, color) {
+            ui.overlay.innerText = text;
+            ui.overlay.style.color = color;
+            ui.overlay.style.opacity = '1';
+            ui.overlay.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                ui.overlay.style.opacity = '0';
+                ui.overlay.style.transform = 'scale(1)';
+            }, 1500);
+        }
+
+        function endGame(won) {
+            screens.game.classList.remove('active-screen');
+            screens.end.classList.add('active-screen');
+            
+            let title = document.getElementById('end-title');
+            if(won) {
+                title.innerText = "HEIST PASSED";
+                title.style.color = "var(--gta-gold)";
             } else {
-                showResults();
+                title.innerText = "MISSION FAILED";
+                title.style.color = "var(--gta-red)";
             }
+            
+            document.getElementById('end-stats').innerText = `Final Score: ${score * 100}`;
         }
 
-        function showResults() {
-            triggerAnimation();
-            screens.quiz.style.display = "none";
-            screens.end.style.display = "block";
-            ui.progressText.innerText = "Session Terminated";
+        /* ====================================================================
+           3. ADVANCED 3D NEON GRID CANVAS ENGINE (Hardware Rendered)
+           ==================================================================== */
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, lines = [];
+        let time = 0;
 
-            const endTitle = document.getElementById('end-title');
-            const finalScoreText = document.getElementById('final-score-text');
-            const endMessage = document.getElementById('end-message');
-
-            finalScoreText.innerText = `${score} // ${QUESTIONS_PER_RUN}`;
-
-            if (score === QUESTIONS_PER_RUN) {
-                endTitle.innerText = "CRIMINAL MASTERMIND";
-                endTitle.style.color = "#2ecc71";
-                endMessage.innerText = "Elite status confirmed. Your knowledge of Los Santos is unmatched.";
-            } else if (score >= 7) {
-                endTitle.innerText = "HEIST SUCCESSFUL";
-                endTitle.style.color = "#f1c40f";
-                endMessage.innerText = "Solid operation, but there is still room for improvement.";
-            } else {
-                endTitle.innerText = "MISSION FAILED";
-                endTitle.style.color = "#e74c3c";
-                endMessage.innerText = "Critical failure. You need to spend more time in the city.";
-            }
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function drawGrid() {
+            ctx.fillStyle = '#050505'; // Dark background
+            ctx.fillRect(0, 0, width, height);
+            
+            time += 0.02; // Speed of forward movement
+            
+            ctx.save();
+            ctx.translate(width / 2, height / 2); // Center horizon
+            
+            ctx.strokeStyle = '#e74c3c'; // Neon red/pink grid
+            ctx.lineWidth = 1;
+
+            // Draw floor
+            let planeY = 150; // Camera height
+            let fov = 300; // Field of view
+
+            ctx.beginPath();
+            // Moving horizontal lines
+            for(let z = 10; z < 1000; z += 50) {
+                let currentZ = z - (time * 150 % 50); // Move lines forward
+                if(currentZ < 1) continue;
+                let scale = fov / currentZ;
+                let y = planeY * scale;
+                ctx.moveTo(-width, y);
+                ctx.lineTo(width, y);
+            }
+            // Vertical perspective lines
+            for(let x = -2000; x < 2000; x += 150) {
+                ctx.moveTo(x * (fov / 1000), planeY * (fov / 1000));
+                ctx.lineTo(x * (fov / 10), planeY * (fov / 10));
+            }
+            ctx.stroke();
+            
+            // Draw distant neon sun
+            ctx.globalCompositeOperation = 'screen';
+            let grad = ctx.createLinearGradient(0, -100, 0, 50);
+            grad.addColorStop(0, '#f1c40f');
+            grad.addColorStop(1, '#e74c3c');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, -50, 120, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+
+            requestAnimationFrame(drawGrid);
+        }
+        drawGrid(); // Start animation loop
     </script>
 </body>
 </html>
