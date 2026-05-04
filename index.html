@@ -3,311 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA V: THE MASTER HEIST</title>
+    <title>GTA V: THE DEFINITIVE TRIVIA</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@600;700&display=swap');
 
         :root {
             --gta-green: #2ecc71;
             --gta-red: #e74c3c;
             --gta-gold: #f1c40f;
             --gta-blue: #3498db;
-            --glass: rgba(0, 0, 0, 0.75);
+            --ui-bg: rgba(0, 0, 0, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.15);
         }
 
         body, html {
             margin: 0; padding: 0; height: 100%;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Rajdhani', sans-serif;
             color: #fff; overflow: hidden;
-            background-color: #000;
+            background-color: #0a0a0a;
         }
 
-        /* FULLSCREEN VIDEO BACKGROUND */
-        .video-bg {
-            position: fixed;
-            top: 50%; left: 50%;
-            min-width: 100%; min-height: 100%;
-            width: auto; height: auto;
-            z-index: -3;
-            transform: translate(-50%, -50%);
-            object-fit: cover;
-            filter: brightness(0.4) contrast(1.2) saturate(1.2);
-        }
-
-        /* FX OVERLAYS */
-        .overlay-fx {
+        /* HARDWARE ACCELERATED VIDEO BACKGROUND */
+        .video-container {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+            z-index: -5; overflow: hidden;
+        }
+
+        #bg-video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            filter: brightness(0.3) contrast(1.1) saturate(1.3);
+        }
+
+        /* FALLBACK ANIMATION (If video fails) */
+        .video-fallback {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -6;
+            background: linear-gradient(125deg, #050505, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* UI OVERLAYS */
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%);
             z-index: -2; pointer-events: none;
         }
 
-        .scanlines {
+        .crt-scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 2px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
             z-index: -1; pointer-events: none;
         }
 
-        /* MAIN UI */
+        /* MAIN GAME BOX */
         .container {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             height: 100vh; padding: 20px;
         }
 
-        .main-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-top: 6px solid var(--gta-green);
-            border-radius: 4px; padding: 40px;
-            width: 100%; max-width: 850px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        .game-card {
+            background: var(--ui-bg);
+            border: 2px solid var(--glass-border);
+            border-left: 8px solid var(--gta-green);
+            padding: 40px; width: 100%; max-width: 900px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
             position: relative;
-            animation: slideIn 0.8s cubic-bezier(0.2, 1, 0.3, 1);
         }
 
         h1 {
-            font-family: 'Bebas Neue', cursive; font-size: 6rem;
-            text-align: center; margin: 0; letter-spacing: 4px;
-            color: #fff; text-shadow: 0 0 30px var(--gta-green);
+            font-family: 'Bebas Neue', cursive; font-size: 5rem;
+            text-align: left; margin: 0 0 20px 0; letter-spacing: 2px;
+            text-shadow: 3px 3px 0 #000;
         }
 
-        /* HUD ELEMENTS */
-        .top-hud {
+        /* HUD STYLING */
+        .hud-bar {
             display: flex; justify-content: space-between;
-            margin-bottom: 30px; font-family: 'Bebas Neue', cursive;
-            font-size: 2rem; border-bottom: 2px solid rgba(255,255,255,0.1);
+            align-items: center; margin-bottom: 25px;
+            font-family: 'Bebas Neue', cursive; font-size: 2.2rem;
+            border-bottom: 1px solid var(--glass-border);
             padding-bottom: 10px;
         }
 
-        .money { color: var(--gta-green); }
-        .wanted { color: var(--gta-gold); }
+        .stat-money { color: var(--gta-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
+        .stat-stars { color: var(--gta-gold); letter-spacing: 5px; }
 
-        /* PROGRESS BAR */
-        .timer-slot {
-            width: 100%; height: 6px; background: rgba(255,255,255,0.1);
-            margin-bottom: 30px; overflow: hidden;
+        /* TIMER BAR */
+        .progress-rail {
+            width: 100%; height: 10px; background: rgba(255,255,255,0.1);
+            margin-bottom: 30px; border-radius: 2px; overflow: hidden;
         }
-        .timer-fill {
+        .progress-fill {
             height: 100%; width: 100%; background: var(--gta-green);
-            transition: width 1s linear;
+            transition: width 1s linear, background-color 0.3s;
         }
 
-        /* QUIZ CONTENT */
-        #q-box { font-size: 2rem; font-weight: 900; text-align: center; margin-bottom: 40px; }
-
-        .options-container {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        /* QUESTION AREA */
+        #question-display {
+            font-size: 2.2rem; font-weight: 700; text-align: left;
+            margin-bottom: 40px; min-height: 100px; line-height: 1.2;
         }
 
-        .choice-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 25px; font-size: 1.2rem; font-weight: 700;
-            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .btn-choice {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            color: #fff; padding: 25px; font-size: 1.4rem; font-weight: 600;
+            cursor: pointer; transition: 0.2s; text-transform: uppercase;
+            text-align: left;
         }
 
-        .choice-btn:hover {
-            background: #fff; color: #000; transform: scale(1.02);
+        .btn-choice:hover { background: #fff; color: #000; transform: translateX(10px); }
+        .btn-choice.correct { background: var(--gta-green) !important; color: #000; }
+        .btn-choice.wrong { background: var(--gta-red) !important; color: #fff; }
+
+        /* FOOTER FEEDBACK (NO OVERLAP) */
+        .status-ticker {
+            position: absolute; bottom: -80px; left: 0; width: 100%;
+            background: var(--gta-gold); color: #000;
+            font-family: 'Bebas Neue', cursive; font-size: 3rem;
+            text-align: center; padding: 10px 0;
+            transform: translateY(20px); opacity: 0;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
         }
 
-        .choice-btn.correct { background: var(--gta-green) !important; color: #000; border-color: #fff; }
-        .choice-btn.wrong { background: var(--gta-red) !important; color: #fff; border-color: #fff; }
+        .status-ticker.active { transform: translateY(0); opacity: 1; }
 
         /* SCREENS */
-        .screen { display: none; text-align: center; }
-        .active { display: block; }
+        .screen { display: none; }
+        .active-screen { display: block; animation: fadeIn 0.5s ease-out; }
 
-        .big-btn {
-            background: var(--gta-gold); color: #000; border: none;
-            padding: 20px 60px; font-family: 'Bebas Neue', cursive;
-            font-size: 2.5rem; cursor: pointer; margin-top: 20px;
-            transition: 0.3s;
+        .big-action-btn {
+            background: var(--gta-green); color: #000; border: none;
+            padding: 20px 80px; font-family: 'Bebas Neue', cursive;
+            font-size: 3rem; cursor: pointer; transition: 0.3s;
         }
+        .big-action-btn:hover { background: #fff; transform: scale(1.05); }
 
-        .big-btn:hover { background: #fff; box-shadow: 0 0 30px var(--gta-gold); }
-
-        /* ANIMATIONS */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(50px) scale(0.9); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        #splash-text {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Bebas Neue', cursive; font-size: 10rem;
-            z-index: 100; pointer-events: none; opacity: 0;
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <!-- PROFESSIONAL VIDEO SOURCE -->
-    <video class="video-bg" autoplay loop muted playsinline>
-        <source src="https://cdn.pixabay.com/video/2021/04/12/70796-537446522_large.mp4" type="video/mp4">
-    </video>
+    <!-- VIDEO SYSTEM WITH FAILSAFE -->
+    <div class="video-fallback"></div>
+    <div class="video-container">
+        <video id="bg-video" autoplay loop muted playsinline>
+            <!-- Primary Link (Stable CDN) -->
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-city-traffic-at-night-seen-from-a-high-angle-34446-large.mp4" type="video/mp4">
+        </video>
+    </div>
 
-    <div class="overlay-fx"></div>
-    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="crt-scanlines"></div>
 
     <div class="container">
-        <div class="main-card">
+        <div class="game-card">
             
-            <!-- START SCREEN -->
-            <div id="start-screen" class="screen active">
-                <h1>LOS SANTOS <span>TRIVIA</span></h1>
-                <p style="font-size: 1.5rem; color: #ccc; margin: 30px 0;">Initialize Bank Heist. 10 Rounds. 15 Seconds. High Stakes.</p>
-                <button class="big-btn" onclick="startGame()">START HEIST</button>
+            <!-- INITIALIZE SCREEN -->
+            <div id="screen-start" class="screen active-screen">
+                <h1>MISSION: LOS SANTOS TRIVIA</h1>
+                <p style="font-size: 1.5rem; color: #aaa; margin-bottom: 40px;">Intel verified. The heist is ready. Do not fail the crew.</p>
+                <button class="big-action-btn" onclick="runGame()">BEGIN HEIST</button>
             </div>
 
-            <!-- GAME SCREEN -->
-            <div id="game-screen" class="screen">
-                <div class="top-hud">
-                    <div class="money" id="money-display">$000,000,000</div>
-                    <div class="wanted" id="wanted-display">★★★★★</div>
+            <!-- ACTIVE MISSION SCREEN -->
+            <div id="screen-game" class="screen">
+                <div class="hud-bar">
+                    <div class="stat-money" id="hud-money">$000,000,000</div>
+                    <div class="stat-stars" id="hud-stars">★★★★★</div>
                 </div>
-                <div class="timer-slot"><div class="timer-fill" id="timer-bar"></div></div>
-                <div id="q-box">INTEL LOADING...</div>
-                <div class="options-container" id="opt-container"></div>
+                <div class="progress-rail"><div class="progress-fill" id="timer-bar"></div></div>
+                <div id="question-display">CONNECTING TO LESTER...</div>
+                <div class="options-grid" id="options-box"></div>
+                
+                <!-- FEEDBACK TICKER (Bottom anchored, no overlap) -->
+                <div id="feedback-ticker" class="status-ticker">RESPECT +</div>
             </div>
 
-            <!-- END SCREEN -->
-            <div id="end-screen" class="screen">
-                <h2 id="end-title" style="font-family: 'Bebas Neue', cursive; font-size: 5rem;"></h2>
-                <div id="final-money" style="font-size: 4rem; color: var(--gta-green); font-family: 'Bebas Neue';"></div>
-                <button class="big-btn" onclick="location.reload()">REPLAY HEIST</button>
+            <!-- RESULTS SCREEN -->
+            <div id="screen-end" class="screen" style="text-align: center;">
+                <h2 id="final-status" style="font-family: 'Bebas Neue', cursive; font-size: 6rem; margin: 0;"></h2>
+                <div id="final-take" style="font-size: 4rem; color: var(--gta-green); font-family: 'Bebas Neue'; margin-bottom: 30px;"></div>
+                <button class="big-action-btn" onclick="location.reload()">RE-REUNITE THE GANG</button>
             </div>
 
         </div>
     </div>
 
-    <div id="splash-text">WASTED</div>
-
     <script>
-        const db = [
-            { q: "What is the name of the fictional city in GTA V?", o: ["Liberty City", "Vice City", "Los Santos", "San Fierro"], a: 2 },
-            { q: "Which character is a retired bank robber?", o: ["Franklin", "Trevor", "Michael", "Lamar"], a: 2 },
-            { q: "What is the name of Franklin's dog?", o: ["Chop", "Buster", "Killer", "Dawg"], a: 0 },
-            { q: "What company makes the 'iFruit' phone?", o: ["Fruit", "Badger", "Shark", "Lifeinvader"], a: 0 },
-            { q: "Who runs Trevor Philips Enterprises?", o: ["Ron", "Wade", "Chef", "Trevor"], a: 3 },
-            { q: "What is the highest mountain?", o: ["Mount Gordo", "Mount Josiah", "Mount Chiliad", "Everest"], a: 2 },
-            { q: "Which PMC is a major antagonist?", o: ["SecuroServ", "Merryweather", "Gruppe Sechs", "Ballas"], a: 1 },
-            { q: "What is the parody of Facebook?", o: ["Bleeter", "Lifeinvader", "Snapmatic", "Chirper"], a: 1 },
-            { q: "Which protagonist lives in Sandy Shores?", o: ["Franklin", "Michael", "Lamar", "Trevor"], a: 3 },
-            { q: "Who is the corrupt FIB agent?", o: ["Steve Haines", "Dave Norton", "Andreas", "Karen"], a: 0 },
-            { q: "The social media site parodying Twitter is?", o: ["Bleeter", "Lifeinvader", "Snapmatic", "Chirper"], a: 0 },
-            { q: "What color do the Grove Street Families wear?", o: ["Purple", "Yellow", "Green", "Red"], a: 2 },
-            { q: "What is the name of the military base?", o: ["Area 51", "Fort Zancudo", "Naval Base", "Vespucci"], a: 1 },
-            { q: "Who is Franklin's best friend?", o: ["Lamar", "Simeon", "Stretch", "Jimmy"], a: 0 },
-            { q: "What is the name of Trevor's pilot friend?", o: ["Ron", "Wade", "Floyd", "Brad"], a: 0 }
+        const questData = [
+            { q: "Which protagonist is a retired bank robber?", o: ["Franklin", "Lamar", "Michael", "Trevor"], a: 2 },
+            { q: "What is the name of Franklin's dog?", o: ["Chop", "Buster", "Rex", "Killer"], a: 0 },
+            { q: "What is the highest point in the game?", o: ["Mount Gordo", "Mount Chiliad", "Vinewood Sign", "Maze Bank"], a: 1 },
+            { q: "Who runs Trevor Philips Enterprises?", o: ["Ron", "Wade", "Lester", "Trevor"], a: 3 },
+            { q: "Which company created the 'iFruit' phone?", o: ["Fruit", "Badger", "Shark", "Whiz"], a: 0 },
+            { q: "What color do the Ballas wear?", o: ["Green", "Purple", "Yellow", "Blue"], a: 1 },
+            { q: "Where is the military base located?", o: ["Vespucci", "Paleto Bay", "Fort Zancudo", "Sandy Shores"], a: 2 },
+            { q: "What is the name of the main fictional city?", o: ["Vice City", "Los Santos", "Liberty City", "San Fierro"], a: 1 },
+            { q: "What is the social media parody name?", o: ["Facelink", "Lifeinvader", "Instapic", "Chirper"], a: 1 },
+            { q: "Who gives Franklin the assassination missions?", o: ["Michael", "Simeon", "Lester", "Devin"], a: 2 },
+            { q: "What kind of dog is Chop?", o: ["Pitbull", "Rottweiler", "Bulldog", "German Shepherd"], a: 1 },
+            { q: "What is the final heist called?", o: ["The Big Score", "The Bureau Raid", "The Jewel Store Job", "The Paleto Score"], a: 0 }
         ];
 
-        let gameList = [];
-        let cur = 0;
-        let cash = 0;
-        let stars = 5;
-        let timer;
-        let timeLeft = 15;
-        let lock = false;
+        let activeSet = [];
+        let index = 0;
+        let wallet = 0;
+        let health = 5;
+        let clock;
+        let timeRemaining = 15;
+        let busy = false;
 
-        function startGame() {
-            gameList = [...db].sort(() => 0.5 - Math.random()).slice(0, 10);
-            cur = 0; cash = 0; stars = 5;
-            document.getElementById('start-screen').classList.remove('active');
-            document.getElementById('game-screen').classList.add('active');
-            updateHUD();
-            loadQ();
+        // Force video play on first click (Browser Bypass)
+        document.addEventListener('click', () => {
+            const v = document.getElementById('bg-video');
+            if (v.paused) v.play();
+        }, { once: true });
+
+        function runGame() {
+            activeSet = [...questData].sort(() => 0.5 - Math.random()).slice(0, 10);
+            index = 0; wallet = 0; health = 5;
+            document.getElementById('screen-start').classList.remove('active-screen');
+            document.getElementById('screen-game').classList.add('active-screen');
+            refreshUI();
+            nextQuestion();
         }
 
-        function updateHUD() {
-            document.getElementById('money-display').innerText = `$${cash.toLocaleString()}`;
-            let s = "";
-            for(let i=0; i<5; i++) s += (i < stars) ? "★" : "☆";
-            document.getElementById('wanted-display').innerText = s;
+        function refreshUI() {
+            document.getElementById('hud-money').innerText = `$${wallet.toLocaleString()}`;
+            let stars = "";
+            for(let i=0; i<5; i++) stars += (i < health) ? "★" : "☆";
+            document.getElementById('hud-stars').innerText = stars;
+            document.getElementById('hud-stars').style.color = (health <= 1) ? "var(--gta-red)" : "var(--gta-gold)";
         }
 
-        function loadQ() {
-            if(stars <= 0) return end(false);
-            if(cur >= gameList.length) return end(true);
+        function nextQuestion() {
+            if(health <= 0) return finish(false);
+            if(index >= activeSet.length) return finish(true);
 
-            lock = false;
-            const data = gameList[cur];
-            document.getElementById('q-box').innerText = data.q;
-            const container = document.getElementById('opt-container');
-            container.innerHTML = "";
+            busy = false;
+            const current = activeSet[index];
+            document.getElementById('question-display').innerText = current.q;
+            const box = document.getElementById('options-box');
+            box.innerHTML = "";
 
-            data.o.forEach((opt, i) => {
+            current.o.forEach((opt, i) => {
                 const b = document.createElement('button');
-                b.className = 'choice-btn';
+                b.className = 'btn-choice';
                 b.innerText = opt;
-                b.onclick = () => check(i, b);
-                container.appendChild(b);
+                b.onclick = () => validate(i, b);
+                box.appendChild(b);
             });
 
-            startTimer();
+            resetClock();
         }
 
-        function startTimer() {
-            clearInterval(timer);
-            timeLeft = 15;
+        function resetClock() {
+            clearInterval(clock);
+            timeRemaining = 15;
             const bar = document.getElementById('timer-bar');
             bar.style.transition = 'none';
             bar.style.width = '100%';
             bar.style.backgroundColor = 'var(--gta-green)';
             setTimeout(() => bar.style.transition = 'width 1s linear', 50);
 
-            timer = setInterval(() => {
-                timeLeft--;
-                bar.style.width = `${(timeLeft/15)*100}%`;
-                if(timeLeft <= 5) bar.style.backgroundColor = 'var(--gta-red)';
-                if(timeLeft <= 0) { clearInterval(timer); check(-1, null); }
+            clock = setInterval(() => {
+                timeRemaining--;
+                bar.style.width = `${(timeRemaining/15)*100}%`;
+                if(timeRemaining <= 5) bar.style.backgroundColor = 'var(--gta-red)';
+                if(timeRemaining <= 0) { clearInterval(clock); validate(-1, null); }
             }, 1000);
         }
 
-        function check(idx, btn) {
-            if(lock) return;
-            lock = true;
-            clearInterval(timer);
+        function validate(choice, btn) {
+            if(busy) return;
+            busy = true;
+            clearInterval(clock);
 
-            const correct = gameList[cur].a;
-            const buttons = document.querySelectorAll('.choice-btn');
+            const answer = activeSet[index].a;
+            const allBtns = document.querySelectorAll('.btn-choice');
+            const ticker = document.getElementById('feedback-ticker');
 
-            if(idx === correct) {
-                btn.classList.add('correct');
-                cash += 250000;
-                flashText("RESPECT +", "var(--gta-green)");
+            if(choice === answer) {
+                if(btn) btn.classList.add('correct');
+                wallet += 150000;
+                ticker.innerText = "RESPECT +";
+                ticker.style.background = "var(--gta-green)";
             } else {
                 if(btn) btn.classList.add('wrong');
-                buttons[correct].classList.add('correct');
-                stars--;
-                flashText("WASTED", "var(--gta-red)");
+                allBtns[answer].classList.add('correct');
+                health--;
+                ticker.innerText = "WASTED";
+                ticker.style.background = "var(--gta-red)";
             }
 
-            updateHUD();
-            cur++;
-            setTimeout(loadQ, 2000);
-        }
-
-        function flashText(txt, color) {
-            const el = document.getElementById('splash-text');
-            el.innerText = txt;
-            el.style.color = color;
-            el.style.opacity = '1';
-            el.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            ticker.classList.add('active');
+            refreshUI();
+            index++;
+            
             setTimeout(() => {
-                el.style.opacity = '0';
-                el.style.transform = 'translate(-50%, -50%) scale(1)';
-            }, 1500);
+                ticker.classList.remove('active');
+                nextQuestion();
+            }, 2000);
         }
 
-        function end(win) {
-            document.getElementById('game-screen').classList.remove('active');
-            document.getElementById('end-screen').classList.add('active');
-            document.getElementById('end-title').innerText = win ? "HEIST SUCCESSFUL" : "MISSION FAILED";
-            document.getElementById('end-title').style.color = win ? "var(--gta-gold)" : "var(--gta-red)";
-            document.getElementById('final-money').innerText = `TOTAL TAKE: $${cash.toLocaleString()}`;
+        function finish(win) {
+            document.getElementById('screen-game').classList.remove('active-screen');
+            document.getElementById('screen-end').classList.add('active-screen');
+            const title = document.getElementById('final-status');
+            title.innerText = win ? "HEIST SUCCESSFUL" : "MISSION FAILED";
+            title.style.color = win ? "var(--gta-gold)" : "var(--gta-red)";
+            document.getElementById('final-take').innerText = `TOTAL TAKE: $${wallet.toLocaleString()}`;
         }
     </script>
 </body>
